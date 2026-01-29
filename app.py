@@ -18,8 +18,23 @@ st.set_page_config(
 # Load the model
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model('keras_model.h5')
-    return model
+    # Try loading .keras format first (if converted)
+    if os.path.exists('keras_model.keras'):
+        try:
+            model = tf.keras.models.load_model('keras_model.keras', compile=False)
+            st.success("Loaded model in .keras format")
+            return model
+        except Exception as e:
+            st.warning(f"Could not load .keras format: {e}")
+    
+    # Try loading .h5 format with compile=False
+    try:
+        model = tf.keras.models.load_model('keras_model.h5', compile=False)
+        return model
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        st.info("Try converting your model using the convert_model.py script, or retrain and re-export from Teachable Machine.")
+        return None
 
 # Load labels
 @st.cache_data
